@@ -4,9 +4,9 @@ import path from "path";
 const ProductDetailPage = (props) => {
   const { loadedProduct } = props;
 
-  // if (!loadedProduct) {
-  //   return <p>Loading....</p>;
-  // }
+  if (!loadedProduct) {
+    return <p>Loading....</p>;
+  }
 
   return (
     <>
@@ -16,15 +16,24 @@ const ProductDetailPage = (props) => {
   );
 };
 
+const getData = async () => {
+  const filePath = path.join(process.cwd(), "data/dummy-backend.json");
+  const jsonData = await fs.readFile(filePath);
+  return JSON.parse(jsonData);
+};
+
 export async function getStaticProps(context) {
   const { params } = context;
   const productId = params.pid;
-  console.log("Regenerating .....");
-  const filePath = path.join(process.cwd(), "data/dummy-backend.json");
-  const jsonData = await fs.readFile(filePath);
-  const data = JSON.parse(jsonData);
 
+  const data = await getData();
   const product = data.products.find((product) => product.id === productId);
+
+  if (!product) {
+    return {
+      notFound: true,
+    };
+  }
 
   return {
     props: {
@@ -34,9 +43,13 @@ export async function getStaticProps(context) {
 }
 
 export async function getStaticPaths() {
+  const data = await getData();
+  const paramsWithId = data.products.map((product) => ({
+    params: { pid: product.id },
+  }));
   return {
-    paths: [{ params: { pid: "p1" } }],
-    fallback: "blocking",
+    paths: paramsWithId,
+    fallback: true,
   };
 }
 
