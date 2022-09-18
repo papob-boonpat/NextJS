@@ -1,35 +1,32 @@
 import React, { useEffect, useState } from "react";
+import useSWR from "swr";
 
 const LastSalePage = () => {
   const [sales, setSales] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-  useEffect(() => {
-    setIsLoading(true);
-    fetch(
-      "https://dummy-f3781-default-rtdb.asia-southeast1.firebasedatabase.app/sales.json"
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        const transformedSales = [];
-        for (const key in data) {
-          transformedSales.push({
-            id: key,
-            username: data[key].username,
-            volume: data[key].volume,
-          });
-        }
-        setSales(transformedSales);
-        setIsLoading(false);
-      });
-  }, []);
 
-  if (isLoading) {
-    return <p>Loading.....</p>;
+  const { data, error } = useSWR(
+    "https://dummy-f3781-default-rtdb.asia-southeast1.firebasedatabase.app/sales.json",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
+  useEffect(() => {
+    const transformedSales = [];
+    for (const key in data) {
+      transformedSales.push({
+        id: key,
+        username: data[key].username,
+        volume: data[key].volume,
+      });
+    }
+    setSales(transformedSales);
+  }, [data]);
+
+  if (error) {
+    return <p>Fail to Load</p>;
   }
 
-  if (!sales) {
-    return <p>No data yet</p>;
+  if (!data || !sales) {
+    return <p>Loading.....</p>;
   }
 
   return (
