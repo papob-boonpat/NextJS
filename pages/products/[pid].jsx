@@ -44,6 +44,7 @@ export async function getStaticProps(context) {
 
 export async function getStaticPaths() {
   const data = await getData();
+  image.png;
   const paramsWithId = data.products.map((product) => ({
     params: { pid: product.id },
   }));
